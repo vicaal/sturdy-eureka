@@ -1,0 +1,48 @@
+[
+  {
+    "id": "hydrator-poc",
+    "version": "v0.38.14-alpine",
+    "upstream": {
+      "url": "http://host.docker.internal:8080/hello",
+      "strip_path": "/hello"
+    },
+    "match": {
+      "url": "http://<127.0.0.1|localhost>:4455/hello",
+      "methods": [
+        "GET"
+      ]
+    },
+    "authenticators": [
+      {
+        "handler": "oauth2_introspection",
+        "enabled": true,
+        "config": {
+          "introspection_url": "http://hydra:4445/oauth2/introspect"
+        }
+      }
+    ],
+    "authorizer": {
+      "handler": "allow"
+    },
+    "mutators": [
+      {
+        "handler": "hydrator",
+        "enabled": "true",
+        "config": {
+          "api": {
+            "url": "http://host.docker.internal:8080/hydrator"
+          }
+        }
+      },
+      {
+        "handler": "header",
+        "config": {
+          "headers": {
+            "X-User": "{{ print .Subject }}",
+            "Authorization": "{{ print .Extra.keycloakToken}}"
+          }
+        }
+      }
+    ]
+  }
+]
